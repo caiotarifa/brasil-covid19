@@ -65,13 +65,24 @@ import { colors, extend } from 'quasar'
 import LineChart from 'components/LineChart'
 import states from 'utils/states'
 
+function getLastValue (data) {
+  const items = Object.values(data).reverse()
+
+  for (const item of items) {
+    if (item !== null) {
+      return item.toLocaleString()
+    }
+  }
+
+  return null
+}
+
 function parseData (list = {}, prefix) {
   const items = {}
 
   Object.keys(list).reverse().forEach(key => {
     if (key.startsWith(prefix)) {
-      const date = key.split('_')
-      items[`2020-${date[2]}-${date[1]}`] = list[key]
+      items[key.split('_')[1]] = list[key]
     }
   })
 
@@ -131,7 +142,7 @@ export default {
     },
 
     casesTotal () {
-      return (Object.values(this.casesData).pop() || 0).toLocaleString()
+      return getLastValue(this.casesData)
     },
 
     cities () {
@@ -149,7 +160,7 @@ export default {
     },
 
     deathsTotal () {
-      return (Object.values(this.deathsData).pop() || 0).toLocaleString()
+      return getLastValue(this.deathsData)
     },
 
     isDisabled () {

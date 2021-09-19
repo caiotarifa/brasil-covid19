@@ -2,7 +2,7 @@
 
 Aplicação para mostrar os dados de COVID-19 de todos os municipios do Brasil.
 
-Desenvolvido para a disciplina de Projeto Integrador da UNIVESP, 2020/2.
+Desenvolvido para a disciplina de Projeto Integrador da UNIVESP, 2021/2.
 
 Autores:
 
