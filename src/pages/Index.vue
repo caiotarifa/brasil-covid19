@@ -1,7 +1,7 @@
 <template>
   <q-page padding>
     <div class="row q-col-gutter-md">
-      <q-form autocomplete="off" class="col-3 q-gutter-md">
+      <q-form autocomplete="off" class="col-12 col-sm-6 col-md-3 q-gutter-md">
         <div>
           <q-select v-model="state" :disable="isLoading" input-debounce="250" label="Estado" :options="statesOptions" outlined use-input @filter="filterStates" @input="getData" />
         </div>
@@ -19,7 +19,7 @@
         </div>
       </q-form>
 
-      <div class="col-9">
+      <div class="col-12 col-sm-6 col-md-9">
         <div v-if="state">
           <div class="text-grey-7 text-h5">{{ state.label }}</div>
           <div class="text-primary text-h2 q-mt-sm">{{ isLoading ? '...' : city.label }}</div>
