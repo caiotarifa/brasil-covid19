@@ -7,7 +7,7 @@
         </div>
 
         <div>
-          <q-select ref="city" v-model="city" :disable="isDisabled" input-debounce="250" label="Cidade" :loading="isLoading" :options="citiesOptions" outlined use-input @filter="filterCities" />
+          <q-select ref="city" v-model="city" :disable="isDisabled" input-debounce="250" label="Cidade" :loading="isLoading" :options="citiesOptions" outlined use-input @filter="filterCities" @input="getBedsData" />
         </div>
 
         <div class="relative-position">
@@ -53,6 +53,19 @@
         <q-inner-loading :showing="isLoading">
           <q-spinner color="grey-5" size="50px" />
         </q-inner-loading>
+
+        <div v-if="city.value" class="q-mt-lg relative-position">
+          <div class="text-primary text-h4">Leitos</div>
+
+          <div class="text-grey-5 text-h6">Últimos Boletins Hospitalares</div>
+          <q-table class="q-mt-sm" :columns="bedsColumns" :data="rawBedsData" hide-pagination />
+
+          <!-- <pre>{{ rawBedsData }}</pre> -->
+
+          <q-inner-loading :showing="isLoading || isLoadingBeds">
+            <q-spinner color="grey-5" size="50px" />
+          </q-inner-loading>
+        </div>
       </div>
     </div>
   </q-page>
@@ -100,13 +113,32 @@ export default {
       citiesOptions: [],
       city: '',
       isLoading: false,
+      isLoadingBeds: false,
       rawData: [],
+      rawBedsData: [],
       state: '',
       statesOptions: []
     }
   },
 
   computed: {
+    bedsColumns () {
+      function compare (total = 0, used = 0) {
+        if (total === 0 && used > total) { total = 1 }
+        return `${used}/${total} (${Math.round(used / total * 100) || 0}%)`
+      }
+
+      return [
+        { name: 'data', field: row => (new Date(row.dataNotificacaoOcupacao)).toLocaleString(), label: 'Data', align: 'left' },
+        { name: 'cnes', field: 'cnes', label: 'CNES', align: 'left' },
+        { name: 'unidade', field: 'nomeCnes', label: 'Unidade', align: 'left' },
+        { name: 'uti-covid', field: row => compare(row.ofertaSRAGUti, row.ocupSRAGUti), label: 'Leitos UTI COVID-19', align: 'left', classes: 'text-negative' },
+        { name: 'enf-covid', field: row => compare(row.ofertaSRAGCli, row.ocupSRAGCli), label: 'Leitos Enferm. COVID-19', align: 'left', classes: 'text-negative' },
+        { name: 'uti-normal', field: row => compare(row.ofertaHospUti, row.ocupHospUti), label: 'Leitos UTI Outros', align: 'left' },
+        { name: 'enf-normal', field: row => compare(row.ofertaHospCli, row.ocupHospCli), label: 'Leitos Enferm. Outros', align: 'left' }
+      ]
+    },
+
     casesChartData () {
       return {
         labels: this.casesLabels,
@@ -216,6 +248,25 @@ export default {
         this.$q.notify('Erro ao obter dados.')
       } finally {
         this.isLoading = false
+      }
+    },
+
+    async getBedsData (city) {
+      this.rawBedsData = []
+
+      if (!city.value) {
+        return
+      }
+
+      this.isLoadingBeds = true
+
+      try {
+        const { data } = await this.$axios.get(`/api?city=${city.label}`)
+        this.rawBedsData = data
+      } catch (error) {
+        this.$q.notify('Erro ao obter dados dos leitos.')
+      } finally {
+        this.isLoadingBeds = false
       }
     },
 
